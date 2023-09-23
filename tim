@@ -1,0 +1,269 @@
+ name: Cypress run	      - name: Cypress run
+        uses: cypress-io/github-action@v4	        uses: cypress-io/github-action@v6
+        with:	        with:
+          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}	          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}
+          start: npx serve	          start: npx serve
+  2 changes: 1 addition & 1 deletion2  
+.github/workflows/e2e-third-party.yml
+@@ -81,7 +81,7 @@ jobs:
+          sed -i 's#cypress/e2e/default/#cypress/e2e/#g' cypress.config.js	          sed -i 's#cypress/e2e/default/#cypress/e2e/#g' cypress.config.js
+      - name: Cypress run	      - name: Cypress run
+        uses: cypress-io/github-action@v4	        uses: cypress-io/github-action@v6
+        with:	        with:
+          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}	          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}
+          start: pnpm run start-ci	          start: pnpm run start-ci
+  2 changes: 1 addition & 1 deletion2  
+.github/workflows/e2e-web.yml
+@@ -142,7 +142,7 @@ jobs:
+        run: npm i -g pm2	        run: npm i -g pm2
+
+
+      - name: Cypress run	      - name: Cypress run
+        uses: cypress-io/github-action@v4	        uses: cypress-io/github-action@v6
+        with:	        with:
+          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}	          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}
+          start: pnpm run start-ci	          start: pnpm run start-ci
+  2 changes: 1 addition & 1 deletion2  
+.github/workflows/temporary-container-checks.yml
+@@ -159,7 +159,7 @@ jobs:
+        run: cp sample.env .env	        run: cp sample.env .env
+
+
+      - name: Cypress run	      - name: Cypress run
+        uses: cypress-io/github-action@v4	        uses: cypress-io/github-action@v6
+        with:	        with:
+          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}	          record: ${{ env.CYPRESS_RECORD_KEY != 0 }}
+          start: docker compose up -d	          start: docker compose up -d
+  1 change: 0 additions & 1 deletion1  
+cypress.config.js
+@@ -12,7 +12,6 @@ module.exports = defineConfig({
+    projectId: 'ke77ns',	    projectId: 'ke77ns',
+    retries: { openMode: 1, runMode: 4 },	    retries: { openMode: 1, runMode: 4 },
+    chromeWebSecurity: false,	    chromeWebSecurity: false,
+
+    // This is the default spec pattern, that we use on /learn proper	    // This is the default spec pattern, that we use on /learn proper
+    //	    //
+    // For special ones like the third- party or the mobile app specs,	    // For special ones like the third- party or the mobile app specs,
+  43 changes: 18 additions & 25 deletions43  
+cypress/e2e/default/landing.ts
+@@ -39,53 +39,46 @@ describe('Landing page', () => {
+    );	    );
+    cy.contains(landingPageElements.callToAction, "Get started (it's free)");	    cy.contains(landingPageElements.callToAction, "Get started (it's free)");
+    cy.get(landingPageElements.callToAction).should('have.length', 4);	    cy.get(landingPageElements.callToAction).should('have.length', 4);
+  });	
+
+
+  it('Has visible header and sub-header', () => {	    // it has header and sub-header'
+    cy.contains(landingPageElements.heading, 'Learn to code — for free.');	    cy.contains(landingPageElements.heading, 'Learn to code — for free.');
+    cy.contains('Build projects.').should('be.visible');	    cy.contains('Build projects.').should('be.visible');
+    cy.contains('Earn certifications.').should('be.visible');	    cy.contains('Earn certifications.').should('be.visible');
+
+    cy.contains(	    cy.contains(
+      'Since 2014, more than 40,000 freeCodeCamp.org ' +	      'Since 2014, more than 40,000 freeCodeCamp.org ' +
+        'graduates have gotten jobs at tech companies including:'	        'graduates have gotten jobs at tech companies including:'
+    ).should('be.visible');	    ).should('be.visible');
+  });	
+
+
+  it('Has 5 brand logos', () => {	    // it has 5 brand logos
+    cy.get('.logo-row').children().its('length').should('eq', 5);	    cy.get('.logo-row').children().its('length').should('eq', 5);
+  });	
+
+
+  it('Has `as seens as` section', () => {	    // it has logos of news publications
+    cy.contains('Build projects.').should('be.visible');	    cy.get('.big-heading').contains('As seen in').siblings().get('svg');
+    cy.get('.big-heading').siblings().get('svg');	
+  });	
+
+
+  it('Has a visible large image on large viewports', function () {	    // it has only current certifications
+    cy.viewport(1200, 660)	
+      .get(landingPageElements.landingPageImage)	
+      .should('be.visible');	
+
+    cy.viewport(1199, 660)	
+      .get(landingPageElements.landingPageImage)	
+      .should('not.exist');	
+  });	
+
+  it('Has links to all superblocks', function () {	
+    cy.get(landingPageElements.curriculumBtns).its('length').should('eq', 15);	    cy.get(landingPageElements.curriculumBtns).its('length').should('eq', 15);
+    cy.wrap(superBlocks).each((cert: LandingPageLogs) => {	    cy.wrap(superBlocks).each((cert: LandingPageLogs) => {
+      cy.get(landingPageElements.curriculumBtns).contains(cert);	      cy.get(landingPageElements.curriculumBtns).contains(cert);
+    });	    });
+  });	
+
+
+  it('Has 3 testimonial cards', function () {	    // it has testimonials
+    cy.get(landingPageElements.testimonials)	    cy.get(landingPageElements.testimonials)
+      .children()	      .children()
+      .its('length')	      .its('length')
+      .should('eq', 3);	      .should('eq', 3);
+  });	
+
+
+  it('Has FAQ section', function () {	    // it has FAQ section
+    cy.get(landingPageElements.faq).its('length').should('eq', 9);	    cy.get(landingPageElements.faq).its('length').should('eq', 9);
+  });	  });
+
+  it('Has a visible large image on large viewports', function () {
+    cy.visit('/');
+    cy.viewport(1200, 660)
+      .get(landingPageElements.landingPageImage)
+      .should('be.visible');
+
+    cy.viewport(1199, 660)
+      .get(landingPageElements.landingPageImage)
+      .should('not.exist');
+  });
+});	});
+  20 changes: 6 additions & 14 deletions20  
+cypress/e2e/default/learn/challenges/code-storage.ts
+@@ -4,33 +4,25 @@ const location =
+  '/learn/responsive-web-design/basic-html-and-html5/say-hello-to-html-elements';	  '/learn/responsive-web-design/basic-html-and-html5/say-hello-to-html-elements';
+
+
+describe('Challenge with editor', function () {	describe('Challenge with editor', function () {
+  before(() => {	  it('the shortcut "Ctrl + S" saves the code', () => {
+    cy.visit(location);	    cy.visit(location);
+  });	
+
+
+  it('renders seed code without localStorage', () => {	    // reloading without saving
+    const editorContents = `<h1>Hello</h1>`;	    const editorContents = `<h1>Hello</h1>`;
+    cy.get(selectors.class.reactMonacoEditor)	    cy.get(selectors.class.reactMonacoEditor, { timeout: 10000 })
+      .as('editor')	      .as('editor')
+      .contains(editorContents);	      .contains(editorContents);
+    cy.get('@editor').click().focused().type(`{movetoend}<h1>Hello World</h1>`);	    cy.get('@editor').click().focused().type(`{movetoend}<h1>Hello World</h1>`);
+    cy.reload();	    cy.reload();
+    cy.get('@editor', { timeout: 10000 }).contains(editorContents);	    cy.get('@editor').contains(editorContents);
+  });	
+
+
+  it('renders code from localStorage after "Ctrl + S"', () => {	    // reloading after saving
+    const editorContents = `<h1>Hello</h1>`;	
+    cy.get(selectors.class.reactMonacoEditor)	
+      .as('editor')	
+      .contains(editorContents);	
+    cy.get('@editor')	    cy.get('@editor')
+      .click()	      .click()
+      .focused()	      .focused()
+      .type(`{movetoend}<h1>Hello World</h1>{ctrl+s}`);	      .type(`{movetoend}<h1>Hello World</h1>{ctrl+s}`);
+    cy.contains("Saved! Your code was saved to your browser's local storage.");	    cy.contains("Saved! Your code was saved to your browser's local storage.");
+    cy.reload();	    cy.reload();
+    cy.get('@editor', { timeout: 10000 }).contains(	    cy.get('@editor').contains('<h1>Hello</h1><h1>Hello World</h1>');
+      '<h1>Hello</h1><h1>Hello World</h1>'	
+    );	
+  });	  });
+});	});
+  2 changes: 1 addition & 1 deletion2  
+cypress/e2e/default/learn/challenges/codeally.ts
+@@ -20,7 +20,7 @@ describe('CodeAlly cert challenge', function () {
+  describe('after completing the project', function () {	  describe('after completing the project', function () {
+    before(() => {	    before(() => {
+      cy.task('seed', ['certified-user']);	      cy.task('seed', ['certified-user']);
+      cy.login();	      cy.login('certified-user');
+      cy.visit(	      cy.visit(
+        '/learn/relational-database/build-a-celestial-bodies-database-project/build-a-celestial-bodies-database'	        '/learn/relational-database/build-a-celestial-bodies-database-project/build-a-celestial-bodies-database'
+      );	      );
+  16 changes: 5 additions & 11 deletions16  
+cypress/e2e/default/learn/challenges/failed-updates.ts
+@@ -25,26 +25,20 @@ describe('failed update flushing', function () {
+    cy.login();	    cy.login();
+  });	  });
+
+
+  beforeEach(() => {	
+    cy.preserveSession();	
+  });	
+
+  it('should resubmit failed updates, check they are stored, then flush', () => {	  it('should resubmit failed updates, check they are stored, then flush', () => {
+    store.set(failedUpdatesKey, failedUpdates);	    store.set(failedUpdatesKey, failedUpdates);
+    cy.request('http://localhost:3000/user/get-session-user')	    cy.request('http://localhost:3000/user/get-session-user')
+      .its('body.user.developmentuser.completedChallenges')	      .its('body.user.developmentuser.completedChallenges')
+      .then((completedChallenges: ChallengeData[]) => {	      .then(
+        const completedIds: string[] = getCompletedIds(completedChallenges);	        (completedChallenges: ChallengeData[]) =>
+        failedUpdates.forEach(failedUpdate => {	          expect(completedChallenges).to.be.empty
+          expect(completedIds).not.to.include(failedUpdate.payload.id);	      );
+        });	
+      });	
+
+
+    cy.intercept('http://localhost:3000/modern-challenge-completed').as(	    cy.intercept('http://localhost:3000/modern-challenge-completed').as(
+      'completed'	      'completed'
+    );	    );
+    cy.wrap(store.get(failedUpdatesKey)).should('deep.equal', failedUpdates);	    cy.wrap(store.get(failedUpdatesKey)).should('deep.equal', failedUpdates);
+    cy.reload();	    cy.visit('/');
+    cy.wait('@completed');	    cy.wait('@completed');
+    // if we don't wait for both requests to complete, we have a race condition	    // if we don't wait for both requests to complete, we have a race condition
+    cy.wait('@completed');	    cy.wait('@completed');
+  3 changes: 1 addition & 2 deletions3  
+cypress/e2e/default/learn/challenges/multifile-cert-project.ts
+@@ -11,11 +11,10 @@ const editorElements = {
+describe('multifileCertProjects', function () {	describe('multifileCertProjects', function () {
+  before(() => {	  before(() => {
+    cy.task('seed');	    cy.task('seed');
+    cy.login();	
+  });	  });
+
+
+  beforeEach(() => {	  beforeEach(() => {
+    cy.preserveSession();	    cy.login();
+    cy.visit(	    cy.visit(
+      'learn/2022/responsive-web-design/build-a-tribute-page-project/build-a-tribute-page'	      'learn/2022/responsive-web-design/build-a-tribute-page-project/build-a-tribute-page'
+    );	    );
+  51 changes: 18 additions & 33 deletions51  
+cypress/e2e/default/learn/challenges/multifile.ts
+@@ -11,16 +11,15 @@ const selectors = {
+};	};
+
+
+describe('Challenge with multifile editor', () => {	describe('Challenge with multifile editor', () => {
+  before(() => {	  beforeEach(() => {
+    cy.visit(location);	    cy.visit(location);
+  });	  });
+
+  it('renders correctly', () => {
+  it('renders the file tab buttons', () => {	    // it renders the file tab buttons
+    cy.get(selectors.monacoTabs).contains('index.html');	    cy.get(selectors.monacoTabs).contains('index.html');
+    cy.get(selectors.monacoTabs).contains('styles.css');	    cy.get(selectors.monacoTabs).contains('styles.css');
+  });	
+
+
+  it('checks for correct text at different widths', () => {	    // it checks for correct text at different widths
+    cy.viewport(768, 660);	    cy.viewport(768, 660);
+    cy.get(selectors.checkLowerJawButton).contains(	    cy.get(selectors.checkLowerJawButton).contains(
+      'Check Your Code (Ctrl + Enter)'	      'Check Your Code (Ctrl + Enter)'
+@@ -43,10 +42,7 @@ describe('Challenge with multifile editor', () => {
+    cy.get('[data-cy=failing-test-feedback]').should('not.exist');	    cy.get('[data-cy=failing-test-feedback]').should('not.exist');
+  });	  });
+
+
+  // Page will change after this test. If your test requires page used in previous	
+  // tests make sure it is above this one	
+  it('prompts unauthenticated user to sign in to save progress', () => {	  it('prompts unauthenticated user to sign in to save progress', () => {
+    cy.visit(location);	
+    cy.focused()	    cy.focused()
+      .click()	      .click()
+      .type('{end}{enter}<meta charset="UTF-8" />')	      .type('{end}{enter}<meta charset="UTF-8" />')
+@@ -58,23 +54,17 @@ describe('Challenge with multifile editor', () => {
+    cy.get(selectors.signInButton).should('not.exist');	    cy.get(selectors.signInButton).should('not.exist');
+  });	  });
+
+
+  it(	  it('focuses on the submit button after tests passed', () => {
+    'focuses on the submit button after tests passed',	    cy.focused().click().type('{end}{enter}<meta charset="UTF-8" />');
+    { browser: '!firefox' },	    cy.get(selectors.checkLowerJawButton).should('not.be.focused');
+    () => {	    cy.get(selectors.checkLowerJawButton).click();
+      cy.visit(location);	    cy.get(selectors.submitLowerJawButton).should('be.focused');
+      cy.focused().click().type('{end}{enter}<meta charset="UTF-8" />');	  });
+      cy.get(selectors.checkLowerJawButton).should('not.be.focused');	
+      cy.get(selectors.checkLowerJawButton).click();	
+      cy.get(selectors.submitLowerJawButton).should('be.focused');	
+    }	
+  );	
+
+
+  it(	  it(
+    'brings back the check button after reset',	    'brings back the check button after reset',
+    { browser: '!firefox' },
